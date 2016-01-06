@@ -10,13 +10,13 @@ import sys
 import socket
 import select
 
-SERVER_HOST = 'localhost'
-SERVER_PORT = 9006
+SERVER_HOST = 'localhost'  # hostname of the server
+SERVER_PORT = 9006         # server port
 
-DEFAULT_TIMEOUT = 3
-DEFAULT_BUFSIZE = 4096
+DEFAULT_TIMEOUT = 3        # timeout of a request
+DEFAULT_BUFSIZE = 4096     # default buffer size; for receiving data from the connection socket
 
-CONN_SOCK = None
+CONN_SOCK = None           # connection socket 
 
 def usage_exit():
 	print 'Usage : ' +  __file__ + '  <-l USERNAME> | <-r>\n'
@@ -38,7 +38,7 @@ def connect_to_server():
 		pass
 	return 0
 
-def _send_request(method, params):
+def __send_request(method, params):
 	request = {'Method': method}
 	request.update(params)
 	CONN_SOCK.send(str(request))
@@ -55,7 +55,7 @@ def _send_request(method, params):
 
 def send_request(method, params):
 	try: 
-		ret = _send_request(method, params)
+		ret = __send_request(method, params)
 	except:
 		error_exit('Connection is broken')
 	return ret
@@ -94,7 +94,9 @@ def channel_loop(channel):
 				sys.stdout.write('[Me] '); sys.stdout.flush()
 
 def leave_channel(chan):
-	if chan == 'w':
+	# if we are in the world channel, we don't need to 
+	# send 'LEAVE_CHANNEL' request
+	if chan == 'w':		
 		return
 	request = {'Method': 'LEAVE_CHANNEL', 'Channel': chan}
 	return CONN_SOCK.send(str(request))
