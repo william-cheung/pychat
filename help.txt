@@ -1,0 +1,11 @@
+
+    exit                  exit the program   
+
+    help                  display this help
+
+    room  list            list all chatting rooms
+          make ROOMNAME   create a chatting room    
+          join ROOMNAME   enter a chatting room
+
+    wrld                  enter the world channel
+

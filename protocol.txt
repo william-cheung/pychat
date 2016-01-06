@@ -1,0 +1,25 @@
+
+
+=======================================+======================================
+Request                                |      Response
+=======================================+======================================  
+Method            Params               |      Error         Content
+---------------------------------------+-------------------------------------- 
+LOGIN             Username, Password   |      OK/Error      (null)
+REGISTER          Username, Password   |      OK/Error      (null)
+MESSAGE           Channel,  Message    |      __            __
+LEAVE_CHANNEL     Channel              |      __            __
+MAKE_ROOM         Roomname             |      OK/Error      (null)
+JOIN_ROOM         Roomname             |      OK/Error      (null)
+FETCH_ROOMS       __                   |      OK/Error      list of rooms                               
+=======================================+======================================
+
+* If a request from a client gets a positive response, the value of Error should be 'OK';
+  otherwise the client cannot receive any data from the server in our current implementation
+
+Example:
+  
+  Request : {'Method': 'LOGIN', 'Username': 'William', 'Password': '123456'}
+  Response: {'Method': 'LOGIN', 'Error': 'OK', 'Content': '(null)'}
+
+
