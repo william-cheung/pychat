@@ -208,7 +208,7 @@ def chat_server():
 		rset, _, _ = select.select(sock_lst['w'], [], [], 0)
 		
 		for sock in rset:
-            # a new connection request recieved
+			# a new connection request recieved
 			if sock == SERVER_SOCK:
 				sockfd, addr = SERVER_SOCK.accept()
 				sock_lst['w'].append(sockfd)
@@ -236,7 +236,7 @@ def broadcast(message, channel, excludes):
 			try:
 				socket.send(str(message))
 			except:
-			# broken socket connection
+				# broken socket connection
 				socket.close()
 				# broken socket, remove it
 				if socket in sock_lst[channel]:
