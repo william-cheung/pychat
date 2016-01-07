@@ -302,6 +302,7 @@ def eval_21game_answer(answer):
 			i += 1
 		else:
 			return fail
+	s.sort() 
 	if s == _21game.rep:
 		try:
 			x = eval(answer)
