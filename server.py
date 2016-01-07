@@ -37,7 +37,6 @@ onlt_map = {}   # map : username -> online time from the latest login
 
 sock_lst = {}   # map : channel ('w', 'r#ROOMNAME', ...) -> list of connection sockets
 
-
 # processing request from clients; no exceptions will be raised from this func
 def request_handler(conn, req):
 	debug_print(str(req), 2)
@@ -51,37 +50,28 @@ def request_handler(conn, req):
 		general_lock.release()
 
 # request dispatcher
-def __request_handler(conn, req):
-	method = req['Method']
-	if method == 'LOGIN':
-		login_handler(conn, req['Username'], req['Password'])
-	elif method == 'REGISTER':
-		register_handler(conn, req['Username'], req['Password'])
-	elif method == 'MESSAGE':
-		message_handler(conn, req['Channel'], req['Message'])
-	elif method == 'MAKE_ROOM':
-		make_room_handler(conn, req['Roomname'])
-	elif method == 'JOIN_ROOM':
-		join_room_handler(conn, req['Roomname'])
-	elif method == 'FETCH_ROOMS':
-		fetch_rooms_handler(conn)
-	elif method == 'LEAVE_CHANNEL':
-		leave_chan_handler(conn, req['Channel'])
+def __request_handler(conn, request):
+	handler_name = request['Method'].lower() + '_handler'
+	handler = globals().get(handler_name)
+	if not handler:
+		debug_print('Invalid request from ' + get_peername(conn), 1)
 	else:
-		debug_print('Invalid request from ' + get_peername(conn), 1) 
+		handler(conn, request)
 		
-		
-def login_handler(conn, username, password):
-	if auth_account(username, password):
+def login_handler(conn, request):
+	username = request['Username']
+	if auth_account(username, request['Password']):
 		on_user_login(conn, username)
-		conn.send(make_response('LOGIN', 'OK', None)) 
+		conn.send(make_response(request['Method'], 'OK', None)) 
 
-def register_handler(conn, username, password):
-	if add_account(username, password):
+def register_handler(conn, request):
+	username = request['Username']
+	if add_account(username, request['Password']):
 		on_user_login(conn, username)
-		conn.send(make_response('REGISTER', 'OK', None))
+		conn.send(make_response(request['Method'], 'OK', None))
 	
-def message_handler(conn, channel, message):
+def message_handler(conn, request):
+	channel, message = request['Channel'], request['Message']
 	if channel == _21GAME_CHAN and message.startswith('\\21game '):
 		process_21game_answer(conn, message[8:].strip())
 	else:
@@ -92,32 +82,33 @@ def message_handler(conn, channel, message):
 def make_roomtag(roomname):
 	return 'r#' + roomname
 
-def make_room_handler(conn, roomname):
+def make_room_handler(conn, request):
 	if room_db.has_key[roomname]:
-		return
+		return 
 	room = {'roomname': roomname, \
 		'creater':get_username(conn), 'creation_date': time.ctime()}
 	room_db[roomname] = str(room)
 	room_db.sync()
 	sock_lst[make_roomtag(roomname)] = []
-	conn.send(make_response('MAKE_ROOM', 'OK', None))
+	conn.send(make_response(request['Method'], 'OK', None))
 
-def join_room_handler(conn, roomname):
-	roomtag = make_roomtag(roomname)
+def join_room_handler(conn, request):
+	roomtag = make_roomtag(request['Roomname'])
 	if sock_lst.has_key(roomtag):
 		sock_lst[roomtag].append(conn)
-		conn.send(make_response('JOIN_ROOM', 'OK', None))
 		broadcast(make_message(roomtag, 'pychat', \
 		                       'user [%s] entered our chatting room\n' % get_username(conn)), \
 		          roomtag, [conn])	 
+		conn.send(make_response(request['Method'], 'OK', None))
 
-def fetch_rooms_handler(conn):
+def fetch_rooms_handler(conn, request):
 	xlist = []
 	for _, v in room_db.iteritems():
 		xlist.append(v)
-	conn.send(make_response('FETCH_ROOMS', 'OK', xlist))
+	conn.send(make_response(request['Method'], 'OK', xlist))
 		
-def leave_chan_handler(conn, channel):
+def leave_channel_handler(conn, request):
+	channel = request['Channel']
 	if conn in sock_lst[channel]:
 		sock_lst[channel].remove(conn)
 		if channel.startswith('r#'):
