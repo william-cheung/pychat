@@ -217,12 +217,12 @@ def chat_server():
 				try:
 					reqst = sock.recv(RECV_BUFFER)
 					if reqst:
-                        # there is a request in the socket
+						# there is a request in the socket
 						request_handler(sock, eval(str(reqst)))	
 					else:
-                        # no data means probably the connection has been broken
+						# no data means probably the connection has been broken
 						on_user_leave(sock)
-                # exception, broken socket connection
+				# exception, broken socket connection
 				except:
 					on_user_leave(sock)
 					continue
@@ -236,9 +236,9 @@ def broadcast(message, channel, excludes):
 			try:
 				socket.send(str(message))
 			except:
-                # broken socket connection
+			# broken socket connection
 				socket.close()
-                # broken socket, remove it
+				# broken socket, remove it
 				if socket in sock_lst[channel]:
 					sock_lst[channel].remove(socket)
 
