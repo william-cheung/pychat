@@ -218,7 +218,7 @@ def chat_server():
 					on_user_leave(sock)
 					continue
 
-	server_socket.close()
+	SERVER_SOCK.close()
 
 # broadcast chat messages to all connected clients in a specific channel
 def broadcast(message, channel, excludes):
